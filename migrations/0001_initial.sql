@@ -1,0 +1,12 @@
+PRAGMA foreign_keys = ON;
+CREATE TABLE users(id TEXT PRIMARY KEY, google_sub TEXT NOT NULL UNIQUE, email TEXT NOT NULL, name TEXT NOT NULL, avatar TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, expires_at INTEGER NOT NULL);
+CREATE INDEX sessions_expiry ON sessions(expires_at);
+CREATE TABLE workspaces(id TEXT PRIMARY KEY,name TEXT NOT NULL,owner_id TEXT NOT NULL REFERENCES users(id));
+CREATE TABLE projects(id TEXT PRIMARY KEY,workspace_id TEXT NOT NULL REFERENCES workspaces(id),name TEXT NOT NULL,code TEXT NOT NULL,next_number INTEGER NOT NULL DEFAULT 1, UNIQUE(workspace_id,code));
+CREATE TABLE project_members(project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,user_id TEXT NOT NULL REFERENCES users(id),role TEXT NOT NULL CHECK(role IN ('ADMIN','MEMBER','VIEWER')),PRIMARY KEY(project_id,user_id));
+CREATE TABLE board_columns(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,name TEXT NOT NULL,color TEXT NOT NULL,position INTEGER NOT NULL,UNIQUE(project_id,position),UNIQUE(project_id,id));
+CREATE TABLE tickets(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,number INTEGER NOT NULL,title TEXT NOT NULL,description TEXT NOT NULL DEFAULT '',type TEXT NOT NULL CHECK(type IN ('STORY','TASK','BUG','IMPROVEMENT')),priority TEXT NOT NULL CHECK(priority IN ('LOW','MEDIUM','HIGH','URGENT')),column_id TEXT NOT NULL,assignee_id TEXT,creator_id TEXT NOT NULL REFERENCES users(id),position INTEGER NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,UNIQUE(project_id,number),FOREIGN KEY(project_id,column_id) REFERENCES board_columns(project_id,id),FOREIGN KEY(project_id,assignee_id) REFERENCES project_members(project_id,user_id));
+CREATE INDEX tickets_board ON tickets(project_id,column_id,position);
+CREATE TABLE invitations(token_hash TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,role TEXT NOT NULL CHECK(role IN ('MEMBER','VIEWER')),expires_at INTEGER NOT NULL,used_at INTEGER,revoked_at INTEGER,created_by TEXT NOT NULL REFERENCES users(id));
+CREATE INDEX memberships_user ON project_members(user_id);
