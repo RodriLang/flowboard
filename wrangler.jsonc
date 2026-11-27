@@ -1,6 +1,30 @@
 {
- "name":"flowboard", "main":"worker/index.ts", "compatibility_date":"2026-01-01",
- "assets":{"directory":"./dist/flowboard/browser","binding":"ASSETS","not_found_handling":"single-page-application","run_worker_first":["/api/*"]},
- "d1_databases":[{"binding":"DB","database_name":"flowboard","database_id":"REEMPLAZAR_CON_ID_D1","migrations_dir":"migrations"}],
- "vars":{"GOOGLE_CLIENT_ID":"REEMPLAZAR_CON_CLIENT_ID"}
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "flowboard",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-01-01",
+  "workers_dev": true,
+  "keep_vars": true,
+  "secrets": {
+    "required": ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
+  },
+  "assets": {
+    "directory": "./dist/flowboard/browser",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"],
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "flowboard",
+      "database_id": "6fb7f352-848e-4eec-80aa-b58ea5a8a74a",
+      "remote": false,
+    },
+  ],
+  "dev": {
+    "ip": "127.0.0.1",
+    "port": 8787,
+    "local_protocol": "http",
+  },
 }
